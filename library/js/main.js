@@ -56,14 +56,31 @@ let score = 0;
 // define lives
 let lives = 3;
 
-// brick postition array
-const bricks = [];
-for (let c = 0; c < brickColumnCount; c += 1) {
-  bricks[c] = [];
-  for (let r = 0; r < brickRowCount; r += 1) {
-    bricks[c][r] = { x: 0, y: 0, status: 1 };
+class Brick {
+  constructor() {
+    this.width = brickWidth;
+    this.height = brickHeight;
+    this.padding = brickPadding;
+    this.color = '#000';
+    this.status = 1;
+    this.posx = 0;
+    this.posy = 0;
   }
 }
+
+let brickGrid = [];
+
+// brick postition array
+for (let r = 0; r < brickRowCount; r += 1) {
+  let brickRow  = [];
+
+  for (let c = 0; c < brickColumnCount; c += 1) {
+    brickRow.push(new Brick());
+  }
+
+  brickGrid.push(brickRow);
+}
+
 
 function drawBall() {
   ctx.beginPath();
@@ -85,24 +102,33 @@ function drawPaddle() {
 function drawBricks(seconds) {
   let roundedSeconds = Math.round(seconds);
   if( (roundedSeconds % 10) == 0 && roundedSeconds !== pastFrameSeconds){
-   brickOffsetTop += brickOffsetTop;
+    var brickRow  = [];
+    for (let c = 0; c < brickColumnCount; c += 1) {
+      const brickX = (c * (brickWidth + brickPadding)) + brickOffsetLeft;
+      brickRow.push(new Brick());
+    }
+
+   brickGrid.unshift(brickRow);
   }
   pastFrameSeconds = roundedSeconds;
-  for (let c = 0; c < brickColumnCount; c += 1) {
-    for (let r = 0; r < brickRowCount; r += 1) {
-      if (bricks[c][r].status === 1) {
-        const brickX = (c * (brickWidth + brickPadding)) + brickOffsetLeft;
-        const brickY = (r * (brickHeight + brickPadding)) + brickOffsetTop;
-        bricks[c][r].x = brickX;
-        bricks[c][r].y = brickY;
+
+  brickGrid.forEach((row, index) => {
+    const brickY = (index * (brickHeight + brickPadding)) + brickOffsetLeft;
+
+    row.forEach((brick, index) => {
+      const brickX = (index * (brickWidth + brickPadding)) + brickOffsetTop;
+      if(brick.status === 1) {
+        brick.posx = brickX;
+        brick.posy = brickY;
+
         ctx.beginPath();
-        ctx.rect(brickX, brickY, brickWidth, brickHeight);
-        ctx.fillStyle = '#0095DD';
+        ctx.rect(brick.posx, brick.posy, brick.width, brick.height);
+        ctx.fillStyle = brick.color;
         ctx.fill();
         ctx.closePath();
       }
-    }
-  }
+    });
+  });
 }
 
 function update(delta) {
@@ -158,6 +184,7 @@ function draw(interp) {
 
   fpsDisplay.textContent = Math.round(fps) + ' FPS'; // display the FPS
   timerDisplay.textContent = seconds; //display the time
+  scoreDisplay.textContent = score; //display score;
 }
 
 function panic() {
@@ -220,13 +247,12 @@ function mouseMoveHandler(e) {
 document.addEventListener('mousemove', mouseMoveHandler, false);
 
 function collisionDetection() {
-  for (let c = 0; c < brickColumnCount; c += 1) {
-    for (let r = 0; r < brickRowCount; r += 1) {
-      const b = bricks[c][r];
-      if (b.status === 1) {
-        if (x > b.x && x < (b.x + brickWidth) && y > b.y && (y < b.y + brickHeight)) {
+  brickGrid.forEach((row) => {
+    row.forEach((brick) => {
+      if (brick.status === 1) {
+        if (x > brick.posx && x < (brick.posx + brick.width) && y > brick.posy && (y < brick.posy + brick.height)) {
           vely = -vely;
-          b.status = 0;
+          brick.status = 0;
           score += 1;
           if (score === (brickColumnCount * brickRowCount)) {
             // alert("You Win");
@@ -234,8 +260,8 @@ function collisionDetection() {
           }
         }
       }
-    }
-  }
+    });
+  });
 }
 
 function gameTimer(timestamp) {

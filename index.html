@@ -6,10 +6,23 @@
 		<link rel="stylesheet" type="text/css" href="library/css/styles.css">
 </head>
 <body>
-<button id="startGame" onClick="startGame()">Start Game</button>
-<button id="stopGame" onClick="stopGame()">Stop Game</button>
-<div id="fpsDisplay"></div>
-<div id="timerDisplay"></div>
+<div class="toolbar">
+	<button id="startGame" onClick="startGame()">Start Game</button>
+	<button id="stopGame" onClick="stopGame()">Stop Game</button>
+	<span>
+		<span>FPS:</span>
+		<span id="fpsDisplay"></span>
+	</span>
+	<span>
+		<span>Score:</span>
+		<span id="scoreDisplay"></span>
+	</span>
+	<span>
+		<span>Time:</span>
+		<span id="timerDisplay"></span>
+	</span>
+</div>
+
 <canvas id="myCanvas" width="735" height="500"></canvas>
 <script src="library/js/main.js"></script>
 <script id="__bs_script__">//<![CDATA[
